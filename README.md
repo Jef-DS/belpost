@@ -8,6 +8,14 @@ Belgische postnummers/Codes postaux belges
 This module provides a field that contains a Belgian Postal
 code. 
 
+Step 7:
+Purpose: to show the real postal code (code + city) when a node is viewed
+Description: based on the id the user has entered in the field, the right
+postal code should be shown when viewing the field (using entity_view)
+Test 1: enter an existing id for the field and observe that the right
+postal code is shown
+Status: dev
+
 Step 6:
 Purpose: provide a belpost field that can be used with other entities
 Description: A user must be able to use a Belgian Postal code as field

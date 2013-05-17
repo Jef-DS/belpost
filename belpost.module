@@ -206,7 +206,8 @@ function belpost_field_formatter_view($entity_type, $entity, $field, $instance, 
   switch ($display['type']) {
     case 'belpost_ref_format':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = $item['ref_belpost_id'];
+        $postalcode = belpost_load($item['ref_belpost_id']);
+        $element[$delta] = entity_view('BelPost', array($postalcode->id => $postalcode));
       }
       break;
   }
