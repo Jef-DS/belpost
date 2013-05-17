@@ -12,7 +12,8 @@ Purpose: Show an existing Belpost Entity
 Description: An existing (in the database) Entity must
 show on url /belpost/<id>
 Test1: insert a postal code in the database and show it on
-/belpost/id with both the postal code and the city 
+/belpost/id with both the postal code and the city
+Status: ready 
 
 Step 1: 
 Purpose: Create BelPost table in database
