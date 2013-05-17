@@ -27,6 +27,16 @@ function belpost_entity_info() {
     ),
     'module' => 'belpost',
     'access callback' => 'belpost_access',
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full'),
+        'custom settings' => FALSE,
+      ),
+      'field' => array(
+        'label' => t('Field'),
+        'custom settings' => FALSE,
+      ),
+    ),
   );
   return $info;
 }
@@ -207,7 +217,7 @@ function belpost_field_formatter_view($entity_type, $entity, $field, $instance, 
     case 'belpost_ref_format':
       foreach ($items as $delta => $item) {
         $postalcode = belpost_load($item['ref_belpost_id']);
-        $element[$delta] = entity_view('BelPost', array($postalcode->id => $postalcode));
+        $element[$delta] = entity_view('BelPost', array($postalcode->id => $postalcode), 'field');
       }
       break;
   }
@@ -231,4 +241,18 @@ function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $lan
       break;
   }
   return $element;
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ * 
+ * Adds module path to the theme registry so belpost.tpl.php gets picked up.
+ * See http://www.metachunk.com/blog/adding-module-path-drupal-7-theme-registry.
+ */
+function belpost_theme_registry_alter(&$theme_registry) {
+  $mod_path = drupal_get_path('module', 'belpost');
+  // Munge on a copy.
+  $theme_registry_copy = $theme_registry;
+  _theme_process_registry($theme_registry_copy, 'phptemplate', 'theme_engine', 'pow', $mod_path);
+  $theme_registry += array_diff_key($theme_registry_copy, $theme_registry);
 }

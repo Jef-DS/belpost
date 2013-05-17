@@ -7,6 +7,15 @@ Belgische postnummers/Codes postaux belges
 
 This module provides a field that contains a Belgian Postal
 code. 
+Step 8:
+Purpose: to provide a view mode that is more appropriate for the display of a
+field in a content type
+Description: the default (full) view mode of BelPost shows the label (=city)
+and the postal code as it is defined in the BuildContent function. When used as
+a field only the postal code should be shown
+Test 1: view the postal code as a field and check that only the postal code and 
+the city is shown (once)
+Status: ready
 
 Step 7:
 Purpose: to show the real postal code (code + city) when a node is viewed
