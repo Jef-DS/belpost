@@ -16,7 +16,7 @@ update and delete belpost entities
 Test2: create a role 'belpost administrators' with the 'administer belpost'
 permission. Check that a member of this group can view, add, update and delete
 belpost entities
-Status: not started
+Status: ready
 
 Step 4:
 Purpose: Administer new Belpost Entities manually using a list
