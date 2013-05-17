@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Install function for the belpost module.
+ */
+
+/**
+* Implements hook_schema();
+*/
+function belpost_schema() {
+  $schema = array();
+  $schema['belpost'] = array(
+    'description' => 'Table with Belgian Postal codes',
+    'fields' => array(
+      'id' => array(
+        'description' => 'primary key',
+        'type' => 'serial',
+        'unsigned' => TRUE,          
+        'not null' => TRUE,
+      ),
+      'code' => array(
+        'description' => 'Postal code', 
+        'type' => 'char',
+        'length' => '4',
+        'not null' => TRUE,
+      ),
+      'city' => array(
+        'description' => 'City', 
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+    'indexes' => array(
+      'idx_belpost_code' => array('code'),
+      'idx_belpost_city' => array('city'),
+    ),
+  );
+  return $schema;
+}
+

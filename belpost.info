@@ -1,0 +1,6 @@
+name = BelPost
+description = Provides a field with Belgian Postal codes
+core = 7.x
+package = beta modules
+version = 7.x-1.0-dev
+dependencies[] = entity

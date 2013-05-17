@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @file
+ * Keeps a list of Belgian Postal codes to use as a field.
+ */
