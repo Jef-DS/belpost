@@ -4,3 +4,105 @@
  * @file
  * Keeps a list of Belgian Postal codes to use as a field.
  */
+
+/**
+ * Implements hook_entity_info().
+ */
+function belpost_entity_info() {
+  $info = array();
+  $info['BelPost'] = array(
+    'label' => t('Belgian Postal code'),
+    'base table' => 'belpost',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'city',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'BelPostEntity',
+    'controller class' => 'BelPostEntityAPIController',
+  );
+  return $info;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function belpost_menu() {
+  $items = array();
+  $items['belpost/%belpost'] = array(
+    'title' => 'code',
+    'page callback' => 'belpost_view_code',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+
+/**
+ * Returns a belpost entity.
+ * 
+ * @param int $id 
+ *   id of the entity
+ * 
+ * @return object 
+ *   a belpost entity or null if entity not found
+ */
+function belpost_load($id) {
+  $entities = entity_load('BelPost', array($id));
+  return array_pop($entities);
+}
+
+/**
+ * Returns a render array with postal code info.
+ * 
+ * @param object $postalcode 
+ *   a BelPost entity
+ * 
+ * @return array 
+ *   a render array
+ */
+function belpost_view_code($postalcode) {
+  drupal_set_title($postalcode->city);
+  $render = entity_view('BelPost', array($postalcode->id => $postalcode));
+  return $render;
+}
+
+class BelPostEntity extends Entity {
+  /**
+   * Returns the default uri for this Postal code.
+   * 
+   * @return array
+   *   The uri info
+   */
+  public function defaultUri() {
+    return array('path' => 'belpost/' . $this->identifier());
+  }
+}
+
+class BelPostEntityAPIController extends EntityAPIController {
+  /**
+   * Returns a render array for a Belpost entity.
+   * 
+   * @param object $entity 
+   *   A Belpost entity
+   * @param string $view_mode 
+   *   The viewmode
+   * @param string $langcode 
+   *   The language code
+   * @param array $content 
+   *   Allows prepopulating the build content
+   * 
+   * @return array
+   *   The render array
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    $build['postalcode'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div>',
+      '#markup' => $entity->code . ' ' . $entity->city,
+      '#suffix' => '</div>',
+    );
+    return $build;
+  }
+}
