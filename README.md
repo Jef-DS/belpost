@@ -7,11 +7,21 @@ Belgische postnummers/Codes postaux belges
 
 This module provides a field that contains a Belgian Postal
 code. 
+Step 5:
+Purpose: Implement 'administer belpost' permission
+Description: only users with 'administer belpost' permission can
+add, update or delete belpost entities
+Test1: check that a user without 'administer belpost' cannot add,
+update and delete belpost entities
+Test2: create a role 'belpost administrators' with the 'administer belpost'
+permission. Check that a member of this group can view, add, update and delete
+belpost entities
+Status: not started
 
 Step 4:
 Purpose: Administer new Belpost Entities manually using a list
 Description: The user should be able to a read, add, update and delete
-Belpost entities in an list of entities located under the uri 'belpost'
+Belpost entities in an list of entities located under the uri 'admin/belpost'
 Test1: Add a new Belpost entity and verify that it exists in the database
 Test2: Update an existing Belpost entity and verify that it has changed in the 
 database
@@ -19,7 +29,7 @@ Test3: Delete an existing Belpost entity and verify that is has been removed
 in the database
 Test4: Click on a Belpost entity in the list en verify that it shows on the uri
 'belpost/<id>'
-status: not started
+status: ready
 
 Step 3:
 Purpose: Define permissions for Belpost entities

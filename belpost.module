@@ -20,6 +20,13 @@ function belpost_entity_info() {
     'uri callback' => 'entity_class_uri',
     'entity class' => 'BelPostEntity',
     'controller class' => 'BelPostEntityAPIController',
+    'admin ui' => array(
+      'path' => 'admin/belpost',
+      'menu wildcard' => '%belpost',
+      'file' => 'belpost.admin.inc',
+    ),
+    'module' => 'belpost',
+    'access callback' => 'belpost_access',
   );
   return $info;
 }
@@ -36,6 +43,29 @@ function belpost_menu() {
     'access arguments' => array('view belpost'),
   );
   return $items;
+}
+
+/**
+ * Checks whether the user has access to the required operation.
+ * 
+ * @param string $op
+ *   An operation
+ * @param object $entity
+ *   The entity the operation must be performed on
+ * @param object $account
+ *   The account that tries to perform the operation
+ * 
+ * @return bool
+ *   TRUE when operation is allowed, FALSE if otherwise
+ */
+function belpost_access($op, $entity = NULL, $account = NULL) {
+  if (user_access('administer belpost', $account)) {
+    return TRUE;
+  }
+  if ($op == 'view' && user_access('view belpost', $account)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
