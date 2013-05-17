@@ -7,6 +7,19 @@ Belgische postnummers/Codes postaux belges
 
 This module provides a field that contains a Belgian Postal
 code. 
+
+Step 6:
+Purpose: provide a belpost field that can be used with other entities
+Description: A user must be able to use a Belgian Postal code as field
+for a node, user, ...
+A belpost field type must appear in the list of available fields
+in the field UI and we must be able to add a field in which we can store an 
+integer
+Test 1: Goto the field ui and observe that the belpost field type appears 
+in the list and that we can add the field to a content type
+Test 2: Store an integer in the field and test whether the user can change it
+Status: ready
+
 Step 5:
 Purpose: Implement 'administer belpost' permission
 Description: only users with 'administer belpost' permission can

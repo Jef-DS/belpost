@@ -40,3 +40,24 @@ function belpost_schema() {
   );
   return $schema;
 }
+
+/**
+ * Implements hook_field_schema().
+ */
+function belpost_field_schema($field) {
+  $columns = array(
+    'ref_belpost_id' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => FALSE,
+    ),
+  );
+  $indexes = array(
+    'idx_ref_belpost' => array('ref_belpost_id'),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}
+

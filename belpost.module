@@ -152,3 +152,82 @@ class BelPostEntityAPIController extends EntityAPIController {
     return $build;
   }
 }
+
+
+/**
+ * Implements hook_field_info().
+ */
+function belpost_field_info() {
+  return array(
+    'belpost_ref' => array(
+      'label' => t('Belgian Postal Code'),
+      'description' => t('A reference to a Belgian Postal Code'),
+      'default_formatter' => 'belpost_ref_format',
+      'default_widget' => 'belpost_ref_widget',
+    ),
+  );
+}
+/**
+ * Implements hook_field_is_empty().
+ */
+function belpost_field_is_empty($item, $field) {
+  return empty($item['ref_belpost_id']);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function belpost_field_formatter_info() {
+  return array(
+    'belpost_ref_format' => array(
+      'label' => t('Belgian Postal Code'),
+      'field types' => array('belpost_ref'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function belpost_field_widget_info() {
+  return array(
+    'belpost_ref_widget' => array(
+      'label' => t('Belgian Postal Code'),
+      'field types' => array('belpost_ref'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function belpost_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'belpost_ref_format':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['#markup'] = $item['ref_belpost_id'];
+      }
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $value = empty($items[$delta]['ref_belpost_id']) ? '' : $items[$delta]['ref_belpost_id'];
+  switch ($instance['widget']['type']) {
+    case 'belpost_ref_widget':
+      $element['ref_belpost_id'] = array(
+        '#title' => check_plain($element['#title']),
+        '#type' => 'textfield',
+        '#default_value' => $value,
+        '#description' => check_plain($element['#description']),
+        '#required' => $element['#required'],
+      );
+      break;
+  }
+  return $element;
+}
