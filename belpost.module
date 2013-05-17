@@ -33,9 +33,25 @@ function belpost_menu() {
     'title' => 'code',
     'page callback' => 'belpost_view_code',
     'page arguments' => array(1),
-    'access callback' => TRUE,
+    'access arguments' => array('view belpost'),
   );
   return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function belpost_permission() {
+  return array(
+    'view belpost' => array(
+      'title' => t('View Belgian Postal Codes'),
+      'description' => t('User can view Belgian Postal Codes'),
+    ),
+    'administer belpost' => array(
+      'title' => t('Administer Belgian Postal Codes'),
+      'description' => t('User can view,add, update and delete Belgian Postal Codes'),
+    ),
+  );
 }
 
 /**
