@@ -3,10 +3,16 @@ belpost
 
 Belgische postnummers/Codes postaux belges
 
-
-
 This module provides a field that contains a Belgian Postal
 code. 
+
+Step 10:
+Purpose: Import the Belgian postal codes
+Description: When the module is installed, a list of Belgian
+Postal codes must be imported
+Test 1: install the module and check the database to see if
+the Belgian Postal Codes are imported
+Status: ready
 
 Step 9: 
 Purpose: Let Drupal recognize (validate) a combination of code and city

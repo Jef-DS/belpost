@@ -310,7 +310,7 @@ function belpost_field_value_callback($element, $input = FALSE) {
 }
 
 /**
- * Validates the input of the BelPost element.
+ * Validates the input of the BelPost field.
  * 
  * @param array $element
  *   The form-element
@@ -321,6 +321,8 @@ function belpost_field_value_callback($element, $input = FALSE) {
  */
 function belpost_element_field_validate($element, $form_state, $form) {
   if (!empty($element['#value'])) {
+    // If the value-callback function has not found 'code city'
+    // the original input will be returned (i.e. a string).
     if (!is_numeric($element['#value'])) {
       form_error($element, t('Wrong postalcode'));
     }
