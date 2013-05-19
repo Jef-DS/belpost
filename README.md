@@ -19,6 +19,7 @@ Test 1: enter an existing combination of code and city and check that the
 right id is stored in the database
 Test 2: enter an inexisting combination of code and city and check
 that the user gets an error
+status:ready
 
 Step 9:
 Purpose: to provide autocompletion so as to let the user type in a postal code
