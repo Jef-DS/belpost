@@ -52,6 +52,13 @@ function belpost_menu() {
     'page arguments' => array(1),
     'access arguments' => array('view belpost'),
   );
+  /*$items['belpost/autocomplete'] = array(
+    'title' => 'belpost autocomplete',
+    'page callback' => 'belpost_autocomplete',
+    'page arguments' => array(2),
+    'access arguments' => array('view belpost'),
+    'type' => MENU_CALLBACK,
+  );*/
   return $items;
 }
 
@@ -228,15 +235,22 @@ function belpost_field_formatter_view($entity_type, $entity, $field, $instance, 
  * Implements hook_field_widget_form().
  */
 function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $value = empty($items[$delta]['ref_belpost_id']) ? '' : $items[$delta]['ref_belpost_id'];
   switch ($instance['widget']['type']) {
     case 'belpost_ref_widget':
+      $value = empty($items[$delta]['ref_belpost_id']) ? '' : $items[$delta]['ref_belpost_id'];
+      if (!empty($value) && is_numeric($value)) {
+        $postalcode = entity_load_single('BelPost', $value);
+        $value = $postalcode->code . ' ' . $postalcode->city;
+      }
       $element['ref_belpost_id'] = array(
         '#title' => check_plain($element['#title']),
         '#type' => 'textfield',
         '#default_value' => $value,
         '#description' => check_plain($element['#description']),
         '#required' => $element['#required'],
+        '#value_callback' => 'belpost_field_value_callback',
+        '#element_validate' => array('belpost_element_field_validate'),
+ //       '#autocomplete_path' => 'belpost/autocomplete',
       );
       break;
   }
@@ -256,3 +270,65 @@ function belpost_theme_registry_alter(&$theme_registry) {
   _theme_process_registry($theme_registry_copy, 'phptemplate', 'theme_engine', 'pow', $mod_path);
   $theme_registry += array_diff_key($theme_registry_copy, $theme_registry);
 }
+
+/**
+ * Value callback for the BelPost textfield.
+ * 
+ * Converts a 'code city' string into the corresponding belpost id.
+ * If more than 1 belpost entry is found or none is found, the function
+ * returns the original input.
+ * 
+ * @param array $element
+ *   The Form element
+ * @param string $input
+ *   The user input (code city)
+ * 
+ * @return int
+ *   the id of the belpost entry (or the original input if not found)
+ */
+function belpost_field_value_callback($element, $input = FALSE) {
+  if ($input === FALSE) {
+    return NULL;
+  }
+  if (empty($input)) {
+    return $input;
+  }
+  list($code, $city) = explode(' ', $input);
+  $query = new EntityFieldQuery();
+  $result = $query->entityCondition('entity_type', 'BelPost')
+          ->propertyCondition('code', $code)
+          ->propertyCondition('city', $city)
+          ->execute();
+  if (isset($result['BelPost']) && count($result['BelPost']) == 1) {
+    $belpost_nids = array_keys($result['BelPost']);
+    if (count($belpost_nids) == 1) {
+      return array_pop($belpost_nids);
+    }
+  }
+  // Invalid combination of code and city.
+  return $input;
+}
+
+/**
+ * Validates the input of the BelPost element.
+ * 
+ * @param array $element
+ *   The form-element
+ * @param array $form_state
+ *   The form state
+ * @param array $form
+ *   The form
+ */
+function belpost_element_field_validate($element, $form_state, $form) {
+  if (!empty($element['#value'])) {
+    if (!is_numeric($element['#value'])) {
+      form_error($element, t('Wrong postalcode'));
+    }
+  }
+}
+/*function belpost_autocomplete($code) {
+  $result = new EntityFieldQuery();
+  $result = $result->propertyCondition('code', $code . '%', 'LIKE')
+          ->execute();
+  drupal_json_output($var);
+}*/

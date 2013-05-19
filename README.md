@@ -7,6 +7,32 @@ Belgische postnummers/Codes postaux belges
 
 This module provides a field that contains a Belgian Postal
 code. 
+
+Step 9: 
+Purpose: Let Drupal recognize (validate) a combination of code and city
+and store the corresponding id in the field. For combinations that cannot
+be validated an error message must be shown.
+Description: In order for autocompletion to work the value in the textfield
+should be 'code city'. This is the format that will be used by the
+autocompletion widget.
+Test 1: enter an existing combination of code and city and check that the 
+right id is stored in the database
+Test 2: enter an inexisting combination of code and city and check
+that the user gets an error
+
+Step 9:
+Purpose: to provide autocompletion so as to let the user type in a postal code
+Description: the user can start typing a postal code and the module will
+show a list of postal codes that fit the typed in text
+Test1: Type the first character of an existing postal code and see that
+a list of corresponding postal codes is displayed
+Status: Cancelled
+Remark: After studying the autocomplete features of Drupal 7 it looks
+like an intermediary step is necessary. Instead of typing in an id, the
+user should type in a postal code and a city. Drupal must recognize the
+code and the city (i.e. validate) and store the corresponding in the 
+database
+
 Step 8:
 Purpose: to provide a view mode that is more appropriate for the display of a
 field in a content type
