@@ -52,13 +52,13 @@ function belpost_menu() {
     'page arguments' => array(1),
     'access arguments' => array('view belpost'),
   );
-  /*$items['belpost/autocomplete'] = array(
+  $items['belpost/autocomplete'] = array(
     'title' => 'belpost autocomplete',
     'page callback' => 'belpost_autocomplete',
     'page arguments' => array(2),
     'access arguments' => array('view belpost'),
     'type' => MENU_CALLBACK,
-  );*/
+  );
   return $items;
 }
 
@@ -250,7 +250,7 @@ function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $lan
         '#required' => $element['#required'],
         '#value_callback' => 'belpost_field_value_callback',
         '#element_validate' => array('belpost_element_field_validate'),
- //       '#autocomplete_path' => 'belpost/autocomplete',
+        '#autocomplete_path' => 'belpost/autocomplete',
       );
       break;
   }
@@ -322,15 +322,48 @@ function belpost_field_value_callback($element, $input = FALSE) {
 function belpost_element_field_validate($element, $form_state, $form) {
   if (!empty($element['#value'])) {
     // If the value-callback function has not found 'code city'
-    // the original input will be returned (i.e. a string).
+    // the original input was used (i.e. a string).
     if (!is_numeric($element['#value'])) {
       form_error($element, t('Wrong postalcode'));
     }
   }
 }
-/*function belpost_autocomplete($code) {
-  $result = new EntityFieldQuery();
-  $result = $result->propertyCondition('code', $code . '%', 'LIKE')
-          ->execute();
+
+/**
+ * Autocomplete function for Belpost field.
+ * 
+ * @param string $code
+ *   The string to search for.
+ */
+function belpost_autocomplete($code) {
+  $var = array();
+  if (is_numeric($code)) {
+    $sql = 'SELECT code, city FROM {belpost} WHERE code LIKE :code';
+    $result = db_query_range($sql, 0, 10, array(':code' => $code . '%'));
+    $rows = $result->fetchAll(PDO::FETCH_NUM);
+    foreach ($rows as $row) {
+      $var[$row[0] . ' ' . $row[1]] = $row[0] . ' ' . $row[1];
+    }
+  }
+  else {
+    $codecity = array();
+    $code = urldecode($code);
+    if (preg_match('/^([0-9]{4}) (.+)/', $code, $codecity)) {
+      $sql = 'SELECT code, city FROM {belpost} WHERE code = :code AND city LIKE :city';
+      $result = db_query_range($sql, 0, 10, array(':code' => $codecity[0], ':city' => $codecity[1] . '%'));
+      $rows = $result->fetchAll(PDO::FETCH_NUM);
+      foreach ($rows as $row) {
+        $var[$row[0] . ' ' . $row[1]] = $row[0] . ' ' . $row[1];
+      }
+    }
+    else {
+      $sql = 'SELECT code, city FROM {belpost} WHERE city LIKE :city';
+      $result = db_query_range($sql, 0, 10, array(':city' => $code . '%'));
+      $rows = $result->fetchAll(PDO::FETCH_NUM);
+      foreach ($rows as $row) {
+        $var[$row[0] . ' ' . $row[1]] = $row[0] . ' ' . $row[1];
+      }
+    }
+  }
   drupal_json_output($var);
-}*/
+}

@@ -6,18 +6,18 @@
  */
 
 /**
- * Implements hook_install();
+ * Implements hook_install().
  */
 function belpost_install() {
   $path = drupal_get_path('module', 'belpost');
-  $filename = $path . '/postcodes.csv'; 
+  $filename = $path . '/postcodes.csv';
   $handle = @fopen($filename, 'r');
   // Read header.
   fgetcsv($handle, 100, ';');
   // Read codes and cities.
   while ($row = fgetcsv($handle, 100, ';')) {
     // As per http://drupal.org/node/1430166 comment #13.
-    if (!mb_detect_encoding($row[1], 'UTF-8', true)) {
+    if (!mb_detect_encoding($row[1], 'UTF-8', TRUE)) {
       $row[1] = mb_convert_encoding($row[1], 'UTF-8', 'ISO-8859-1');
     }
     db_insert('belpost')

@@ -6,6 +6,16 @@ Belgische postnummers/Codes postaux belges
 This module provides a field that contains a Belgian Postal
 code. 
 
+Step 11:
+Purpose: Implement autocompletion for postal codes
+Description: When the user starts typing a postal code or city
+a list of possible postal codes should be shown (max 10)
+Test 1: start typing a postal and see that the right postal codes
+are shown
+Test 2: start typing the name of a city and see that the right
+postal codes are shown
+Status: dev
+
 Step 10:
 Purpose: Import the Belgian postal codes
 Description: When the module is installed, a list of Belgian
