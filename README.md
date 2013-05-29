@@ -6,6 +6,20 @@ Belgische postnummers/Codes postaux belges
 This module provides a field that contains a Belgian Postal
 code. 
 
+Version 7.x-0.9: it is now possible to change citynames in Dutch and French
+
+Step 13:
+Purpose: French city names must work too
+Test 1: Choose French as a language en de (bilingual en French) city names
+should be shown in French
+
+Step 12:
+Purpose: Provide a configuration page to choose the database (Dutch or French)
+Description: The administrator should be able to choose in which language
+the cities should be shown
+Test 1: Choose Dutch as a language and get the same results as before
+Test 2: Choose French as a language and get an error
+
 Step 11:
 Purpose: Implement autocompletion for postal codes
 Description: When the user starts typing a postal code or city

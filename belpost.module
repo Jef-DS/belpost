@@ -15,7 +15,7 @@ function belpost_entity_info() {
     'base table' => 'belpost',
     'entity keys' => array(
       'id' => 'id',
-      'label' => 'city',
+      'label' => 'citynl',
     ),
     'uri callback' => 'entity_class_uri',
     'entity class' => 'BelPostEntity',
@@ -58,6 +58,12 @@ function belpost_menu() {
     'page arguments' => array(2),
     'access arguments' => array('view belpost'),
     'type' => MENU_CALLBACK,
+  );
+  $items['admin/belpost/settings'] = array(
+    'title' => 'Belgian Postal Code administration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('belpost_admin'),
+    'access arguments' => array('administer belpost'),
   );
   return $items;
 }
@@ -160,10 +166,17 @@ class BelPostEntityAPIController extends EntityAPIController {
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    $city = '';
+    if (variable_get('belpost_language', 'nl') == 'nl') {
+      $city = check_plain($entity->citynl);
+    }
+    else {
+      $city = check_plain($entity->cityfr);
+    }
     $build['postalcode'] = array(
       '#type' => 'markup',
       '#prefix' => '<div>',
-      '#markup' => $entity->code . ' ' . $entity->city,
+      '#markup' => check_plain($entity->code) . ' ' . $city,
       '#suffix' => '</div>',
     );
     return $build;
@@ -240,7 +253,14 @@ function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $lan
       $value = empty($items[$delta]['ref_belpost_id']) ? '' : $items[$delta]['ref_belpost_id'];
       if (!empty($value) && is_numeric($value)) {
         $postalcode = entity_load_single('BelPost', $value);
-        $value = $postalcode->code . ' ' . $postalcode->city;
+        $city = '';
+        if (variable_get('belpost_language', 'nl') == 'nl') {
+          $city = $postalcode->citynl;
+        }
+        else {
+          $city = $postalcode->cityfr;
+        }
+        $value = $postalcode->code . ' ' . $city;
       }
       $element['ref_belpost_id'] = array(
         '#title' => check_plain($element['#title']),
@@ -248,7 +268,6 @@ function belpost_field_widget_form(&$form, &$form_state, $field, $instance, $lan
         '#default_value' => $value,
         '#description' => check_plain($element['#description']),
         '#required' => $element['#required'],
-        '#value_callback' => 'belpost_field_value_callback',
         '#element_validate' => array('belpost_element_field_validate'),
         '#autocomplete_path' => 'belpost/autocomplete',
       );
@@ -272,44 +291,6 @@ function belpost_theme_registry_alter(&$theme_registry) {
 }
 
 /**
- * Value callback for the BelPost textfield.
- * 
- * Converts a 'code city' string into the corresponding belpost id.
- * If more than 1 belpost entry is found or none is found, the function
- * returns the original input.
- * 
- * @param array $element
- *   The Form element
- * @param string $input
- *   The user input (code city)
- * 
- * @return int
- *   the id of the belpost entry (or the original input if not found)
- */
-function belpost_field_value_callback($element, $input = FALSE) {
-  if ($input === FALSE) {
-    return NULL;
-  }
-  if (empty($input)) {
-    return $input;
-  }
-  list($code, $city) = explode(' ', $input);
-  $query = new EntityFieldQuery();
-  $result = $query->entityCondition('entity_type', 'BelPost')
-          ->propertyCondition('code', $code)
-          ->propertyCondition('city', $city)
-          ->execute();
-  if (isset($result['BelPost']) && count($result['BelPost']) == 1) {
-    $belpost_nids = array_keys($result['BelPost']);
-    if (count($belpost_nids) == 1) {
-      return array_pop($belpost_nids);
-    }
-  }
-  // Invalid combination of code and city.
-  return $input;
-}
-
-/**
  * Validates the input of the BelPost field.
  * 
  * @param array $element
@@ -319,12 +300,41 @@ function belpost_field_value_callback($element, $input = FALSE) {
  * @param array $form
  *   The form
  */
-function belpost_element_field_validate($element, $form_state, $form) {
+function belpost_element_field_validate($element, &$form_state, $form) {
   if (!empty($element['#value'])) {
-    // If the value-callback function has not found 'code city'
-    // the original input was used (i.e. a string).
-    if (!is_numeric($element['#value'])) {
-      form_error($element, t('Wrong postalcode'));
+    $lijst = array();
+    // Check for '<postalcode city>.
+    if (preg_match('/^([0-9]{4}) (.+)$/', $element['#value'], $lijst)) {
+      $query = new EntityFieldQuery();
+      $query = $query->entityCondition('entity_type', 'BelPost')
+              ->propertyCondition('code', $lijst[1])
+              ->addTag('node_access');
+      // Get the right language.
+      $language = variable_get('belpost_language', 'nl');
+      if ($language == 'nl') {
+        $query = $query->propertyCondition('citynl', $lijst[2]);
+      }
+      else {
+        $query = $query->propertyCondition('cityfr', $lijst[2]);
+      }
+      $result = $query->execute();
+      // Check whether only one postal code is found.
+      if (isset($result['BelPost']) && count($result['BelPost']) == 1) {
+        $belpost_nids = array_keys($result['BelPost']);
+        if (count($belpost_nids) == 1) {
+          $value = array_pop($belpost_nids);
+          form_set_value($element, $value, $form_state);
+        }
+        else {
+          form_error($element, t('Combinatie "postcode gemeente" is niet uniek'));
+        }
+      }
+      else {
+        form_error($element, t('Combinatie "postcode gemeente" niet gevonden'));
+      }
+    }
+    else {
+      form_error($element, t('Dit is geen geldig postcode formaat(Postnummer Gemeente)'));
     }
   }
 }
@@ -336,9 +346,18 @@ function belpost_element_field_validate($element, $form_state, $form) {
  *   The string to search for.
  */
 function belpost_autocomplete($code) {
+  $code = check_markup($code);
   $var = array();
+  $language = variable_get('belpost_language', 'nl');
+  // Only (partial) postal code is entered.
   if (is_numeric($code)) {
-    $sql = 'SELECT code, city FROM {belpost} WHERE code LIKE :code';
+    $sql = '';
+    if ($language == 'nl') {
+      $sql = 'SELECT code, citynl FROM {belpost} WHERE code LIKE :code';
+    }
+    else {
+      $sql = 'SELECT code, cityfr FROM {belpost} WHERE code LIKE :code';
+    }
     $result = db_query_range($sql, 0, 10, array(':code' => $code . '%'));
     $rows = $result->fetchAll(PDO::FETCH_NUM);
     foreach ($rows as $row) {
@@ -348,16 +367,29 @@ function belpost_autocomplete($code) {
   else {
     $codecity = array();
     $code = urldecode($code);
-    if (preg_match('/^([0-9]{4}) (.+)/', $code, $codecity)) {
-      $sql = 'SELECT code, city FROM {belpost} WHERE code = :code AND city LIKE :city';
-      $result = db_query_range($sql, 0, 10, array(':code' => $codecity[0], ':city' => $codecity[1] . '%'));
+    // Postal code and (partial) city is entered.
+    if (preg_match('/^([0-9]{4}) (.+)$/', $code, $codecity)) {
+      $sql = '';
+      if ($language == 'nl') {
+        $sql = 'SELECT code, citynl FROM {belpost} WHERE code = :code AND citynl LIKE :city';
+      }
+      else {
+        $sql = 'SELECT code, cityfr FROM {belpost} WHERE code = :code AND cityfr LIKE :city';
+      }
+      $result = db_query_range($sql, 0, 10, array(':code' => $codecity[1], ':city' => $codecity[2] . '%'));
       $rows = $result->fetchAll(PDO::FETCH_NUM);
       foreach ($rows as $row) {
         $var[$row[0] . ' ' . $row[1]] = $row[0] . ' ' . $row[1];
       }
     }
     else {
-      $sql = 'SELECT code, city FROM {belpost} WHERE city LIKE :city';
+      // Only (partial) city is entered.
+      if ($language == 'nl') {
+        $sql = 'SELECT code, citynl FROM {belpost} WHERE citynl LIKE :city';
+      }
+      else {
+        $sql = 'SELECT code, cityfr FROM {belpost} WHERE cityfr LIKE :city';
+      }
       $result = db_query_range($sql, 0, 10, array(':city' => $code . '%'));
       $rows = $result->fetchAll(PDO::FETCH_NUM);
       foreach ($rows as $row) {
@@ -367,3 +399,22 @@ function belpost_autocomplete($code) {
   }
   drupal_json_output($var);
 }
+
+/**
+ * Build the configuration form.
+ * 
+ * @return array
+ *   The configuration form.
+ */
+function belpost_admin() {
+  $form = array();
+  $form['settings']['belpost_language'] = array(
+    '#type' => 'radios',
+    '#title' => t('Language'),
+    '#description' => t('Define the language setting for Belgian postal codes'),
+    '#options' => array('nl' => t('Dutch'), 'fr' => t('French')),
+    '#default_value' => variable_get('belpost_language', 'nl'),
+  );
+  return system_settings_form($form);
+}
+

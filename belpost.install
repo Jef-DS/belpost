@@ -10,18 +10,24 @@
  */
 function belpost_install() {
   $path = drupal_get_path('module', 'belpost');
-  $filename = $path . '/postcodes.csv';
+  $filename = $path . '/zipcodesnlfr.csv';
   $handle = @fopen($filename, 'r');
   // Read header.
-  fgetcsv($handle, 100, ';');
+  fgetcsv($handle, 200, ';');
   // Read codes and cities.
-  while ($row = fgetcsv($handle, 100, ';')) {
+  while ($row = fgetcsv($handle, 200, ';')) {
     // As per http://drupal.org/node/1430166 comment #13.
     if (!mb_detect_encoding($row[1], 'UTF-8', TRUE)) {
       $row[1] = mb_convert_encoding($row[1], 'UTF-8', 'ISO-8859-1');
     }
+    if (!mb_detect_encoding($row[2], 'UTF-8', TRUE)) {
+      $row[2] = mb_convert_encoding($row[2], 'UTF-8', 'ISO-8859-1');
+    }
     db_insert('belpost')
-    ->fields(array('code' => $row[0], 'city' => $row[1]))->execute();
+    ->fields(array(
+      'code' => $row[0],
+      'citynl' => $row[1],
+      'cityfr' => $row[2]))->execute();
   }
   fclose($handle);
 }
@@ -46,8 +52,14 @@ function belpost_schema() {
         'length' => '4',
         'not null' => TRUE,
       ),
-      'city' => array(
-        'description' => 'City',
+      'citynl' => array(
+        'description' => 'City(Dutch)',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'cityfr' => array(
+        'description' => 'City(French)',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
@@ -56,7 +68,8 @@ function belpost_schema() {
     'primary key' => array('id'),
     'indexes' => array(
       'idx_belpost_code' => array('code'),
-      'idx_belpost_city' => array('city'),
+      'idx_belpost_citynl' => array('citynl'),
+      'idx_belpost_cityfr' => array('cityfr'),
     ),
   );
   return $schema;
@@ -82,3 +95,9 @@ function belpost_field_schema($field) {
   );
 }
 
+/**
+ * Implements hook_uninstall().
+ */
+function belpost_uninstall() {
+  variable_del('belpost_language');
+}

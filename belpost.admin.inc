@@ -26,11 +26,18 @@ function belpost_form($form, $form_state, $entity = NULL) {
     '#default_value' => isset($entity->code) ? $entity->code : '',
     '#required' => TRUE,
   );
-  $form['city'] = array(
-    '#title' => t('City'),
-    '#description' => t('A Belgian city'),
+  $form['citynl'] = array(
+    '#title' => t('City(nl)'),
+    '#description' => t('A Belgian city(Dutch)'),
     '#type' => 'textfield',
-    '#default_value' => isset($entity->city) ? $entity->city : '',
+    '#default_value' => isset($entity->citynl) ? $entity->citynl : '',
+    '#required' => TRUE,
+  );
+  $form['cityfr'] = array(
+    '#title' => t('City(fr)'),
+    '#description' => t('A Belgian city(French)'),
+    '#type' => 'textfield',
+    '#default_value' => isset($entity->cityfr) ? $entity->cityfr : '',
     '#required' => TRUE,
   );
   $form['actions'] = array(
